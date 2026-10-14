@@ -1,7 +1,5 @@
 {
   "refreshSeconds": 60,
-  "historyRange": "6mo",
-  "historyRefreshMinutes": 30,
   "baseCurrency": "EUR",
   "stocksFile": "list_stocks.csv",
   "othersFile": "list_others.csv",

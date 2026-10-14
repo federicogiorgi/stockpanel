@@ -1,7 +1,7 @@
 namespace StockPanel;
 
 /// <summary>Background loop: reads the two lists, finds the Yahoo symbols, then every RefreshSeconds fetches
-/// the day's quotes (plus the long charts and the weather less often) and publishes a snapshot as JSON.</summary>
+/// the day's quotes (and the weather less often) and publishes a snapshot as JSON.</summary>
 public sealed class DataService : IDisposable
 {
     static readonly TimeSpan WeatherEvery = TimeSpan.FromMinutes(10);
@@ -55,13 +55,13 @@ public sealed class DataService : IDisposable
         var all = indices.Concat(stocks).ToList();
         var resolver = new SymbolResolver(_yahoo, _cfg.Symbols);
         var fx = new Dictionary<string, ChartData>(StringComparer.OrdinalIgnoreCase);
-        var fxCurrencies = holdings.Select(h => h.Currency).Append("USD")
+        var fxCurrencies = holdings.SelectMany(h => new[] { h.Currency, h.BuyCurrency }).Append("USD")
             .Where(c => !string.Equals(c, _cfg.BaseCurrency, StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
         WeatherNow? weather = null;
         ChartData? btc = null;
-        DateTime nextWeather = DateTime.MinValue, nextHistory = DateTime.MinValue;
+        var nextWeather = DateTime.MinValue;
         DateTime? lastDataUtc = null;
 
         while (!ct.IsCancellationRequested)
@@ -104,19 +104,6 @@ public sealed class DataService : IDisposable
                 }, ct)));
             await Task.WhenAll(tasks);
             if (ok > 0 || all.Any(i => i.DayFetchedUtc >= started)) lastDataUtc = DateTime.UtcNow;
-
-            // long charts
-            if (started >= nextHistory)
-            {
-                var hist = 0;
-                await Task.WhenAll(stocks.Where(s => s.Symbol is not null).Select(s => Limited(async () =>
-                {
-                    var h = await Chart(s.Symbol!, _cfg.HistoryRange, "1d", ct);
-                    if (h is not null) { s.History = h; Interlocked.Increment(ref hist); }
-                }, ct)));
-                // on failure try again on the next round instead of waiting the whole interval
-                nextHistory = hist > 0 ? started.AddMinutes(_cfg.HistoryRefreshMinutes) : started;
-            }
 
             var wx = await weatherTask;
             if (wx is not null) { weather = wx; nextWeather = started + WeatherEvery; }

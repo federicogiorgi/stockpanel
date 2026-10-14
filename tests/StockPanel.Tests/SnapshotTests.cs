@@ -36,24 +36,25 @@ public class SnapshotTests
         var snap = SnapshotBuilder.Build(cfg, [s], [], fx, null, null, [], DateTime.UtcNow, DateTimeOffset.UtcNow);
         var st = snap.Stocks[0];
         Assert.Equal(10, st.ChangePct);           // 110 -> 121
-        Assert.Equal(21, st.OverallPct);          // bought at 100
+        Assert.Equal(21, st.OverallPct);          // bought at 100 USD
         Assert.Equal(190.91, st.Pl!.Value, 2);    // 21 USD x 10 / 1.1
         Assert.Equal(100, st.Day!.Value, 2);      // 11 USD x 10 / 1.1
-        Assert.Equal(1100, snap.Portfolio!.Value, 2);
+        Assert.Equal(1100, st.Value!.Value, 2);
         var usd = Assert.Single(snap.Extras);
         Assert.Equal("USD/EUR", usd.Name);
         Assert.Equal(0.9091, usd.Price, 4);
     }
 
     [Fact]
-    public void PortfolioIntraday_UsesPreviousCloseBeforeTheOpen()
+    public void Build_PurchasePriceInEuro_ForADollarStock()
     {
-        var eu = Day(10, 12, [0, 300], [11, 12], 0, 600);
-        var us = Day(20, 21, [400], [21], 300, 900);
-        var s = SnapshotBuilder.PortfolioIntraday([(eu, 1), (us, 1)], 30, 10_000)!;
-        Assert.Equal(0, s.T[0]);
-        Assert.Equal(31, s.V[0]);   // EU 11 + US still at its previous close 20
-        Assert.Equal(33, s.V[^1]);  // 12 + 21
-        Assert.Equal(30, s.Ref);
+        var cfg = new PanelConfig();
+        // bought for 100 EUR a share; now 121 USD at 1.10 USD/EUR = 110 EUR
+        var h = new Holding("ACME", "US0000000001", "ACME.O", "NASDAQ", "Industrials", "USD", 100, 10, null, "EUR");
+        var s = new Instrument { Holding = h, Symbol = "ACME", Day = Day(110, 121, [0, 300], [115, 121], 0, 600) with { Currency = "USD" }, DayFetchedUtc = DateTime.UtcNow };
+        var fx = new Dictionary<string, ChartData> { ["USD"] = Day(1.1, 1.1, [0], [1.1], 0, 600) };
+        var st = SnapshotBuilder.Build(cfg, [s], [], fx, null, null, [], DateTime.UtcNow, DateTimeOffset.UtcNow).Stocks[0];
+        Assert.Equal(10, st.OverallPct!.Value, 2);
+        Assert.Equal(100, st.Pl!.Value, 2);
     }
 }

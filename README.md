@@ -3,7 +3,7 @@
 A live stock-portfolio dashboard for one of those long 400×1280 mini-monitors, on Windows.
 You list your stocks with their purchase prices in a CSV file; stockpanel fetches the quotes
 from Yahoo Finance every minute and shows, at a glance, how each one is doing today and how
-it is doing against what you paid for it, with charts for everything. It is the sibling of
+it is doing against what you paid for it, with a chart of the day for each. It is the sibling of
 [paxpanel](https://github.com/federicogiorgi/paxpanel), the hardware sensor panel, and like it
 fills the little screen edge to edge, or runs as a normal window when the mini-monitor isn't
 connected. It shows:
@@ -12,8 +12,7 @@ connected. It shows:
 - **The four indices/funds** of `list_others.csv`: daily change and today's chart, in taller
   tiles set apart from the stocks
 - **Every stock** of `list_stocks.csv`: name and daily change (large), sector, result
-  against the purchase price (% and €), today's chart and the 6-month chart with the
-  purchase price as a dashed line
+  against the purchase price (% and €) and today's chart
 - Spare cells at the end of the stock grid show Bitcoin in dollars (since midnight UTC), then USD/EUR
 
 <p align="center"><img src="docs/panel.png" width="300" alt="stockpanel showing the example portfolio"></p>
@@ -22,7 +21,7 @@ connected. It shows:
 Each tile is green when the stock is up for the day and red when it is down, darker or
 brighter with the size of the move. The daily % uses the same colour; the result against
 the purchase price has its own green/red (on a dark pill), independent of the day. In the
-charts the area above the dashed reference line (previous close, or purchase price) is
+charts the area above the dashed reference line (the previous close) is
 green and the area below it red. A small white dot in a tile's corner means its market is
 open. Quotes come from Yahoo Finance every minute.
 
@@ -71,8 +70,12 @@ Comma or semicolon separated (Excel with Italian settings: `;` and decimal comma
 **`list_stocks.csv`**: the columns are found by name. Needed: a name (`Stock Name`), a ticker
 and/or `ISIN`, `Purchase Price` and `Currency`; the quantity comes from a `Quantity` column,
 or, as in the broker export, from `Current Total Value (Original Currency)` ÷ `Current Price`.
-`Sector` and `Market` are optional. Prices are in the stock's own currency; € amounts use
-today's exchange rate (so currency gains since you bought are not counted).
+`Sector` and `Market` are optional.
+
+`Purchase Price` is in the stock's own currency. Name the currency in brackets when it is
+another one, as brokers often report what you paid in euro: with `Purchase Price (EUR)` a
+dollar stock's result is its price converted at today's rate against the euro you paid, so
+it includes the dollar's move since you bought. € amounts use today's exchange rates.
 
 **`list_others.csv`**: `Name`, `Short name` (shown on the panel), `ISIN` (or `Ticker`).
 
@@ -95,8 +98,6 @@ only thin or non-euro listings for some of them.
 | Key | What it does |
 |---|---|
 | `refreshSeconds` | Seconds between quote updates (default 60, at least 15) |
-| `historyRange` | Range of the long charts: `1mo`, `3mo`, `6mo`, `1y`, `2y`, `5y`, `ytd`, `max` |
-| `historyRefreshMinutes` | How often the long charts are fetched again |
 | `baseCurrency` | Currency of the € amounts |
 | `stocksFile`, `othersFile` | The two lists |
 | `sortBy` | Tile order: `file`, `name`, `daily`, `overall`, `value` |

@@ -143,7 +143,7 @@ function stockTile() {
   el.innerHTML =
     '<div class="r1"><span class="nm"></span><span class="dp">–</span></div>' +
     '<div class="r2"><span class="sc"></span><span class="ov ovp">–</span><span class="ov ovm">–</span></div>' +
-    '<div class="ch"><svg class="sp day"></svg><svg class="sp hist"></svg></div>';
+    '<div class="ch"><svg class="sp day"></svg></div>';
   return el;
 }
 
@@ -186,17 +186,24 @@ function fitName(el, max) {
   if (el.style.fontSize !== v) el.style.fontSize = v;
 }
 
-// GICS sector names that do not fit a half-width tile
+// GICS sector names that do not fit a half-width tile: shorter and shorter forms
 const SECTOR_SHORT = {
-  'communication services': 'Communication',
-  'consumer discretionary': 'Cons. Discr.',
-  'consumer staples': 'Cons. Staples',
-  'information technology': 'Info Technology',
+  'communication services': ['Communication', 'Comms'],
+  'consumer discretionary': ['Cons. Discr.', 'Discr.'],
+  'consumer staples': ['Cons. Staples', 'Staples'],
+  'information technology': ['Info Technology', 'Tech'],
+  'health care': ['Health'],
+  'real estate': ['Real Est.'],
 };
 function fitSector(el, sector) {
-  let text = sector || '';
-  const short = SECTOR_SHORT[text.toLowerCase()];
-  if (short && el.clientWidth > 0 && textWidth(el, text, parseFloat(getComputedStyle(el).fontSize)) > el.clientWidth - 2) text = short;
+  const full = sector || '';
+  const room = el.clientWidth - 2;
+  const px = parseFloat(getComputedStyle(el).fontSize);
+  let text = full;
+  for (const short of SECTOR_SHORT[full.toLowerCase()] || []) {
+    if (room <= 0 || textWidth(el, text, px) <= room) break;
+    text = short;
+  }
   setText(el, text);
 }
 
@@ -257,7 +264,6 @@ function render(s) {
       const ovp = $('.ovp', el), ovm = $('.ovm', el);
       setText(ovp, pct(it.overallPct)); ovp.className = 'ov ovp ' + tone(o);
       setText(ovm, money(it.pl, cur)); ovm.className = 'ov ovm ' + tone(dir(it.pl, 0));
-      chart($('svg.hist', el), it.history, true);
     });
   });
 

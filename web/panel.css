@@ -67,8 +67,7 @@ svg.sp { display: block; width: 100%; overflow: visible; }
 .ov { font-size: 13px; padding: 0 4px; border-radius: 3px; background: rgb(0 0 0 / .32); }
 .ch { flex: 1; min-height: 0; display: flex; gap: 6px; margin-top: 3px; }
 .ch svg { flex: 1; min-width: 0; height: 100%; }
-.ch svg.hist { flex: .85; }
-.xt .ovm, .xt svg.hist { display: none; }
+.xt .ovm { display: none; }
 
 /* index tiles: name and daily % only, with the day's chart; taller than the stock tiles */
 #idx .tile { height: 90px; padding: 4px 7px 5px; }

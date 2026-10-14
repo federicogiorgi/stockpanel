@@ -38,6 +38,18 @@ public class ListsTests
     }
 
     [Fact]
+    public void PurchasePriceColumn_CanNameItsCurrency()
+    {
+        var path = Temp("Stock Name,Ticker,Purchase Price (EUR),Current Price,Currency,Current Total Value (Original Currency)\nACME,ACME.O,90.5,100,USD,2000\n");
+        var (items, warnings) = Lists.LoadStocks(path);
+        Assert.Empty(warnings);
+        Assert.Equal(90.5, items[0].BuyPrice);
+        Assert.Equal("EUR", items[0].BuyCurrency);
+        Assert.Equal("USD", items[0].Currency);
+        Assert.Equal(20, items[0].Quantity);
+    }
+
+    [Fact]
     public void Pence_AreConvertedToPounds()
     {
         var path = Temp("Name,Ticker,Purchase Price,Quantity,Currency\nSHELL,SHEL.L,2500,10,GBX\n");

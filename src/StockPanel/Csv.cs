@@ -8,6 +8,7 @@ namespace StockPanel;
 public sealed class CsvTable
 {
     readonly Dictionary<string, int> _columns = new();
+    readonly string[] _header;
 
     public char Separator { get; }
     public IReadOnlyList<string[]> Rows { get; }
@@ -16,6 +17,7 @@ public sealed class CsvTable
     {
         Separator = separator;
         Rows = rows;
+        _header = header;
         for (var i = 0; i < header.Length; i++) _columns.TryAdd(Normalize(header[i]), i);
     }
 
@@ -40,6 +42,19 @@ public sealed class CsvTable
     }
 
     public double? Number(string[] row, params string[] names) => ParseNumber(Get(row, names), Separator);
+
+    /// <summary>A column named like one of <paramref name="names"/> plus a currency in brackets, such as
+    /// "Purchase Price (EUR)": its name and the currency.</summary>
+    public (string Column, string Currency)? WithCurrency(params string[] names)
+    {
+        var wanted = names.Select(Normalize).ToHashSet();
+        foreach (var h in _header)
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(h.Trim(), @"^(.*?)\s*[\(\[]\s*([A-Za-z]{3})\s*[\)\]]$");
+            if (m.Success && wanted.Contains(Normalize(m.Groups[1].Value))) return (h, m.Groups[2].Value);
+        }
+        return null;
+    }
 
     public static double? ParseNumber(string s, char separator)
     {

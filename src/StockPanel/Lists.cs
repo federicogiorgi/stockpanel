@@ -1,10 +1,14 @@
 namespace StockPanel;
 
-/// <summary>A stock from list_stocks.csv. Prices are in <see cref="Currency"/> (pence and similar already
-/// converted to the main unit).</summary>
+/// <summary>A stock from list_stocks.csv. Its price is in <see cref="Currency"/>, the purchase price in
+/// <see cref="BuyCurrency"/> (the same unless the column says otherwise, as in "Purchase Price (EUR)");
+/// pence and similar are already converted to the main unit.</summary>
 public sealed record Holding(
     string Name, string Isin, string Ticker, string Market, string Sector,
-    string Currency, double BuyPrice, double Quantity, string? Yahoo);
+    string Currency, double BuyPrice, double Quantity, string? Yahoo, string? BuyIn = null)
+{
+    public string BuyCurrency => BuyIn ?? Currency;
+}
 
 /// <summary>An index or fund from list_others.csv: only its daily trend is shown.</summary>
 public sealed record IndexItem(string Name, string ShortName, string Isin, string Ticker, string? Yahoo);
@@ -40,6 +44,9 @@ public static class Lists
         var table = Read(path, warnings);
         if (table is null) return (items, warnings);
 
+        // "Purchase Price (EUR)": the purchase price is in that currency, whatever the stock trades in
+        var buyColumn = table.Has(BuyCols) ? null : table.WithCurrency(BuyCols);
+
         foreach (var row in table.Rows)
         {
             var name = table.Get(row, NameCols);
@@ -48,7 +55,7 @@ public static class Lists
             if (name.Length == 0) name = ticker.Length > 0 ? ticker : isin;
             if (name.Length == 0) continue;
 
-            var buy = table.Number(row, BuyCols);
+            var buy = buyColumn is { } bc ? table.Number(row, bc.Column) : table.Number(row, BuyCols);
             var qty = table.Number(row, QtyCols);
             if (qty is null)
             {
@@ -61,9 +68,12 @@ public static class Lists
             if (qty is null or <= 0) warnings.Add($"{name}: no quantity");
 
             var (currency, factor) = MainUnit(table.Get(row, CurrencyCols) is { Length: > 0 } c ? c : "EUR");
+            string? buyIn = null;
+            var buyFactor = factor;
+            if (buyColumn is { } col) (buyIn, buyFactor) = MainUnit(col.Currency);
             var yahoo = table.Get(row, YahooCols);
             items.Add(new Holding(name, isin, ticker, table.Get(row, MarketCols), table.Get(row, SectorCols),
-                currency, (buy ?? 0) * factor, qty ?? 0, yahoo.Length > 0 ? yahoo : null));
+                currency, (buy ?? 0) * buyFactor, qty ?? 0, yahoo.Length > 0 ? yahoo : null, buyIn));
         }
         return (items, warnings);
     }

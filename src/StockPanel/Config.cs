@@ -20,9 +20,6 @@ public sealed class PanelConfig
 {
     /// <summary>Seconds between quote updates (at least 15).</summary>
     public int RefreshSeconds { get; set; } = 60;
-    /// <summary>Yahoo range of the long chart: 1mo, 3mo, 6mo, 1y, 2y, 5y, ytd or max.</summary>
-    public string HistoryRange { get; set; } = "6mo";
-    public int HistoryRefreshMinutes { get; set; } = 30;
     public string BaseCurrency { get; set; } = "EUR";
     public string StocksFile { get; set; } = "list_stocks.csv";
     public string OthersFile { get; set; } = "list_others.csv";
@@ -50,7 +47,6 @@ public static class ConfigLoader
         {
             var cfg = JsonSerializer.Deserialize<PanelConfig>(File.ReadAllText(path), Options) ?? new PanelConfig();
             cfg.RefreshSeconds = Math.Clamp(cfg.RefreshSeconds, 15, 3600);
-            cfg.HistoryRefreshMinutes = Math.Clamp(cfg.HistoryRefreshMinutes, 5, 1440);
             cfg.Symbols = new Dictionary<string, string>(cfg.Symbols ?? new(), StringComparer.OrdinalIgnoreCase);
             cfg.Monitor ??= new();
             cfg.Weather ??= new();
