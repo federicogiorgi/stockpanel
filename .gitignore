@@ -1,0 +1,12 @@
+bin/
+obj/
+*.user
+.vs/
+*.log
+publish/
+TestResults/
+/StockPanel.exe
+build/
+web/mock.json
+list_stocks.csv
+.claude/

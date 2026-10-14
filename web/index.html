@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>stockpanel</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<div id="panel">
+  <header class="hdr">
+    <span id="clock">--:--</span>
+    <span class="wx">
+      <svg id="wxIcon" viewBox="0 0 32 32"></svg>
+      <b id="wxTemp">–</b>
+      <span class="wxs"><span id="wxPlace"></span><span id="wxRange"></span></span>
+    </span>
+    <span id="date"></span>
+  </header>
+
+  <section id="idx" class="grid2"></section>
+  <div class="divider"><span>STOCKS</span></div>
+  <section id="stk" class="grid2"><div class="loading">Loading quotes…</div></section>
+
+  <div id="warn"></div>
+  <footer id="foot"><span id="upd"></span><span id="fx"></span></footer>
+</div>
+<script src="panel.js"></script>
+<script>
+  if (new URLSearchParams(location.search).has('mock')) {
+    fetch('mock.json').then(r => r.json()).then(s => render(s));
+  }
+</script>
+</body>
+</html>
