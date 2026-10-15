@@ -76,10 +76,11 @@ and/or `ISIN`, `Purchase Price` and `Currency`; the quantity comes from a `Quant
 or, as in the broker export, from `Current Total Value (Original Currency)` ÷ `Current Price`.
 `Sector` and `Market` are optional.
 
-`Purchase Price` is in the stock's own currency. Name the currency in brackets when it is
-another one, as brokers often report what you paid in euro: with `Purchase Price (EUR)` a
-dollar stock's result is its price converted at today's rate against the euro you paid, so
-it includes the dollar's move since you bought. € amounts use today's exchange rates.
+`Purchase Price` is in the stock's own currency unless you say otherwise. Brokers often report
+what you paid in euro: set `"purchaseCurrency": "EUR"` in `config.json` (as shipped), or name
+the currency in the column, as in `Purchase Price (EUR)` (the column name wins). A dollar
+stock's result is then its price converted at today's rate against the euro you paid, so it
+includes the dollar's move since you bought. € amounts use today's exchange rates.
 
 **`list_others.csv`**: `Name`, `Short name` (shown on the panel), `ISIN` (or `Ticker`).
 
@@ -103,6 +104,7 @@ only thin or non-euro listings for some of them.
 |---|---|
 | `refreshSeconds` | Seconds between quote updates (default 60, at least 15) |
 | `baseCurrency` | Currency of the € amounts |
+| `purchaseCurrency` | Currency of the purchase prices in the stocks list (`EUR`), or `null` for each stock's own currency |
 | `stocksFile`, `othersFile` | The two lists |
 | `sortBy` | Tile order: `file`, `name`, `daily`, `overall`, `value` |
 | `monitor` | Target screen: by size (`width`×`height`) or by `deviceName` such as `\.\DISPLAY4` |

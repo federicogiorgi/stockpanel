@@ -37,7 +37,9 @@ public static class Lists
         _ => (currency.ToUpperInvariant(), 1),
     };
 
-    public static (List<Holding> Items, List<string> Warnings) LoadStocks(string path)
+    /// <param name="purchaseCurrency">Currency of the purchase prices (config.json "purchaseCurrency");
+    /// null: each stock's own currency. A currency in the column name, as in "Purchase Price (EUR)", wins.</param>
+    public static (List<Holding> Items, List<string> Warnings) LoadStocks(string path, string? purchaseCurrency = null)
     {
         var items = new List<Holding>();
         var warnings = new List<string>();
@@ -70,7 +72,7 @@ public static class Lists
             var (currency, factor) = MainUnit(table.Get(row, CurrencyCols) is { Length: > 0 } c ? c : "EUR");
             string? buyIn = null;
             var buyFactor = factor;
-            if (buyColumn is { } col) (buyIn, buyFactor) = MainUnit(col.Currency);
+            if ((buyColumn?.Currency ?? purchaseCurrency) is { Length: > 0 } bcur) (buyIn, buyFactor) = MainUnit(bcur.Trim());
             var yahoo = table.Get(row, YahooCols);
             items.Add(new Holding(name, isin, ticker, table.Get(row, MarketCols), table.Get(row, SectorCols),
                 currency, (buy ?? 0) * buyFactor, qty ?? 0, yahoo.Length > 0 ? yahoo : null, buyIn));

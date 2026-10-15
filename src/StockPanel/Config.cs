@@ -21,6 +21,9 @@ public sealed class PanelConfig
     /// <summary>Seconds between quote updates (at least 15).</summary>
     public int RefreshSeconds { get; set; } = 60;
     public string BaseCurrency { get; set; } = "EUR";
+    /// <summary>Currency of the purchase prices in the stocks list (e.g. EUR when the broker reports what was paid
+    /// in euro); null or empty: each stock's own currency. A currency in the column name wins.</summary>
+    public string? PurchaseCurrency { get; set; }
     public string StocksFile { get; set; } = "list_stocks.csv";
     public string OthersFile { get; set; } = "list_others.csv";
     /// <summary>Order of the stock tiles: file, name, daily, overall, value.</summary>
@@ -52,6 +55,7 @@ public static class ConfigLoader
             cfg.Weather ??= new();
             if (string.IsNullOrWhiteSpace(cfg.BaseCurrency)) cfg.BaseCurrency = "EUR";
             cfg.BaseCurrency = cfg.BaseCurrency.Trim().ToUpperInvariant();
+            cfg.PurchaseCurrency = string.IsNullOrWhiteSpace(cfg.PurchaseCurrency) ? null : cfg.PurchaseCurrency.Trim();
             return (cfg, null);
         }
         catch (Exception e)

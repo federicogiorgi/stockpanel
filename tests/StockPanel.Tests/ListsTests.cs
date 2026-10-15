@@ -50,6 +50,16 @@ public class ListsTests
     }
 
     [Fact]
+    public void PurchaseCurrencySetting_AppliesToAPlainColumn()
+    {
+        var path = Temp("Stock Name,Ticker,Purchase Price,Quantity,Currency\nACME,ACME.O,90.5,20,USD\nSHELL,SHEL.L,25,10,GBX\n");
+        var (items, _) = Lists.LoadStocks(path, "EUR");
+        Assert.All(items, h => Assert.Equal("EUR", h.BuyCurrency));
+        Assert.Equal(25, items[1].BuyPrice, 6);   // euro, not pence
+        Assert.Equal("USD", Lists.LoadStocks(path).Items[0].BuyCurrency);
+    }
+
+    [Fact]
     public void Pence_AreConvertedToPounds()
     {
         var path = Temp("Name,Ticker,Purchase Price,Quantity,Currency\nSHELL,SHEL.L,2500,10,GBX\n");

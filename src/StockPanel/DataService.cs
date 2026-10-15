@@ -44,7 +44,7 @@ public sealed class DataService : IDisposable
     async Task LoopAsync(CancellationToken ct)
     {
         var fallback = new List<string>();
-        var (holdings, w1) = Lists.LoadStocks(ListPath(_cfg.StocksFile, fallback));
+        var (holdings, w1) = Lists.LoadStocks(ListPath(_cfg.StocksFile, fallback), _cfg.PurchaseCurrency);
         var (others, w2) = Lists.LoadOthers(ListPath(_cfg.OthersFile, fallback));
         var listWarnings = _extraWarnings.Concat(fallback).Concat(w1).Concat(w2).ToList();
         foreach (var w in listWarnings) Log.Warn(w);

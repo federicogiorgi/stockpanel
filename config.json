@@ -1,6 +1,7 @@
 {
   "refreshSeconds": 60,
   "baseCurrency": "EUR",
+  "purchaseCurrency": "EUR",
   "stocksFile": "list_stocks.csv",
   "othersFile": "list_others.csv",
   "sortBy": "file",
