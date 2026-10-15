@@ -57,7 +57,7 @@ function renderClock() {
   setText($('#date'), `${DAYS[t.getDay()]} ${pad2(t.getDate())}-${MONTHS[t.getMonth()]}-${String(t.getFullYear()).slice(2)}`);
 }
 renderClock();
-setInterval(renderClock, 1000);
+setInterval(() => { renderClock(); updateMarkets(); }, 1000);
 
 /* ---- weather icons (WMO codes from Open-Meteo) ---- */
 const SUN = '<circle cx="16" cy="16" r="6" fill="#ffc940"/>' +
@@ -143,21 +143,51 @@ function stockTile() {
   el.innerHTML =
     '<div class="r1"><span class="nm"></span><span class="dp">–</span></div>' +
     '<div class="r2"><span class="sc"></span><span class="ov ovp">–</span><span class="ov ovm">–</span></div>' +
-    '<div class="ch"><svg class="sp day"></svg></div>';
+    '<div class="ch"><svg class="sp day"></svg><span class="mk"></span></div>';
   return el;
 }
 
 function indexTile() {
   const el = document.createElement('div');
   el.className = 'tile flat';
-  el.innerHTML = '<div class="r1"><span class="nm"></span><span class="dp">–</span></div><div class="ch"><svg class="sp day"></svg></div>';
+  el.innerHTML = '<div class="r1"><span class="nm"></span><span class="dp">–</span></div><div class="ch"><svg class="sp day"></svg><span class="mk"></span></div>';
   return el;
+}
+
+/* ---- market open or closed ----
+   Decided from the session times against the clock (every second), so tiles change state right when a
+   market opens or closes. Sessions of 23 hours or more (Bitcoin, currencies) count as always open. */
+function marketOpen(session, fallback, now = Date.now() / 1000) {
+  if (!session) return !!fallback;
+  if (session.end - session.start >= 23 * 3600) return true;
+  return now >= session.start && now < session.end;
+}
+
+function closedLabel(session, now = Date.now() / 1000) {
+  if (!session || now >= session.start) return 'CLOSED';
+  const t = new Date(session.start * 1000), today = new Date();
+  const hm = `${pad2(t.getHours())}:${pad2(t.getMinutes())}`;
+  return t.toDateString() === today.toDateString() ? `OPENS ${hm}` : `OPENS ${DAYS[t.getDay()].toUpperCase()} ${hm}`;
+}
+
+function paintMarket(el) {
+  const open = marketOpen(el._session, el._open);
+  el.classList.toggle('open', open);
+  el.classList.toggle('closed', !open);
+  const mk = $('.mk', el);
+  if (mk) setText(mk, open ? '' : closedLabel(el._session));
+}
+
+function updateMarkets() {
+  for (const el of document.querySelectorAll('.tile')) if ('_open' in el) paintMarket(el);
 }
 
 function paintTile(el, item, extra) {
   const d = dir(item.changePct);
   const cls = ['tile', tint(d)];
-  if (item.open) cls.push('open');
+  el._session = item.session || null;
+  el._open = !!item.open;
+  cls.push(marketOpen(el._session, el._open) ? 'open' : 'closed');
   if (item.stale) cls.push('stale');
   const c = cls.join(' ');
   if (el.className !== c) el.className = c;
@@ -166,6 +196,7 @@ function paintTile(el, item, extra) {
   setText($('.dp', el), pct(item.changePct));
   if (extra) extra(el, item);
   chart($('svg.day', el), item.intraday, false);
+  paintMarket(el);
 }
 
 /* ---- fitting text: measured on a canvas, so it does not depend on when the layout runs ---- */

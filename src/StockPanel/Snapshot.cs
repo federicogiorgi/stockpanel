@@ -7,17 +7,21 @@ namespace StockPanel;
 /// (the previous close); X0..X1 the time span the chart covers (the trading session).</summary>
 public sealed record SeriesDto(long[] T, double[] V, double? Ref, long? X0, long? X1);
 
+/// <summary>The market's current or next regular session (unix seconds); the page compares it with the clock
+/// to show open and closed markets, and when a closed one opens.</summary>
+public sealed record SessionDto(long Start, long End);
+
 public sealed record StockDto(
     string Name, string Sector, string? Symbol, string Currency, double? Price, double? ChangePct,
-    double? OverallPct, double? Pl, double? Day, double? Value, bool Open, bool Stale, SeriesDto? Intraday);
+    double? OverallPct, double? Pl, double? Day, double? Value, bool Open, bool Stale, SeriesDto? Intraday, SessionDto? Session);
 
-public sealed record IndexDto(string Name, string? Symbol, double? Price, double? ChangePct, bool Open, bool Stale, SeriesDto? Intraday);
+public sealed record IndexDto(string Name, string? Symbol, double? Price, double? ChangePct, bool Open, bool Stale, SeriesDto? Intraday, SessionDto? Session);
 
 public sealed record FxDto(string Pair, double Rate, double? ChangePct);
 
 /// <summary>A tile for a spare grid cell (Bitcoin, the dollar): price with its own decimals and currency.</summary>
 public sealed record ExtraDto(string Name, string Note, double Price, int Decimals, string? Currency, double? ChangePct,
-    bool Open, bool Stale, SeriesDto? Intraday);
+    bool Open, bool Stale, SeriesDto? Intraday, SessionDto? Session);
 
 public sealed record Snapshot(
     string Updated, string? DataTime, string Base, WeatherNow? Weather,
@@ -48,6 +52,7 @@ public static class SnapshotBuilder
     public static Snapshot Build(PanelConfig cfg, IReadOnlyList<Instrument> stocks, IReadOnlyList<Instrument> indices,
         IReadOnlyDictionary<string, ChartData> fx, ChartData? btc, WeatherNow? weather, List<string> warnings, DateTime? lastDataUtc, DateTimeOffset now)
     {
+        var nowUnix = now.ToUnixTimeSeconds();
         var staleAfter = TimeSpan.FromSeconds(cfg.RefreshSeconds * 3 + 30);
         bool Stale(Instrument i) => i.Day is null || now.UtcDateTime - i.DayFetchedUtc > staleAfter;
 
@@ -60,7 +65,7 @@ public static class SnapshotBuilder
         {
             var s = stocks[k];
             var h = s.Holding!;
-            var d = s.Day;
+            var d = s.Day is null ? null : Today(s.Day, nowUnix);
             // everything in the base currency at today's rates; the purchase price may be in another
             // currency than the stock (a USD stock bought for EUR), which then includes the currency move
             var rate = Rate(h.Currency);
@@ -78,7 +83,7 @@ public static class SnapshotBuilder
 
             stockDtos.Add((new StockDto(h.Name, h.Sector, s.Symbol, h.Currency, R(price, 4), R(change, 2), R(overall, 2),
                 R(pl, 2), R(day, 2), R(value, 2), d?.IsOpen ?? false, Stale(s),
-                d is null ? null : Intraday(d)), k));
+                d is null ? null : Intraday(d), Session(d)), k));
         }
 
         var sorted = cfg.SortBy.ToLowerInvariant() switch
@@ -92,10 +97,10 @@ public static class SnapshotBuilder
 
         var indexDtos = indices.Select(i =>
         {
-            var d = i.Day;
+            var d = i.Day is null ? null : Today(i.Day, nowUnix);
             double? change = d is not null && d.PrevClose is > 0 ? (d.Price / d.PrevClose - 1) * 100 : null;
             return new IndexDto(i.Index!.ShortName, i.Symbol, R(d?.Price, 4), R(change, 2), d?.IsOpen ?? false, Stale(i),
-                d is null ? null : Intraday(d));
+                d is null ? null : Intraday(d), Session(d));
         }).ToList();
 
         FxDto? fxDto = null;
@@ -117,8 +122,19 @@ public static class SnapshotBuilder
         ExtraDto Extra(string name, string note, ChartData d, int decimals, string? currency, DateTimeOffset at) =>
             new(name, note, Math.Round(d.Price, decimals), decimals, currency,
                 d.PrevClose is > 0 ? R((d.Price / d.PrevClose - 1) * 100, 2) : null, d.IsOpen,
-                at.UtcDateTime - DateTimeOffset.FromUnixTimeSeconds(d.MarketTime).UtcDateTime > TimeSpan.FromDays(4), Intraday(d));
+                at.UtcDateTime - DateTimeOffset.FromUnixTimeSeconds(d.MarketTime).UtcDateTime > TimeSpan.FromDays(4), Intraday(d), Session(d));
     }
+
+    /// <summary>Right after the open Yahoo still reports yesterday's last trade (its European quotes come ~15 minutes
+    /// late), sometimes with yesterday's previous close too, which would repeat yesterday's move. Until today's first
+    /// trade arrives the day's change is 0 from the last price, and the chart starts empty at today's open.</summary>
+    internal static ChartData Today(ChartData d, long nowUnix) =>
+        d.RegularStart is { } start && nowUnix >= start && d.MarketTime < start
+            ? d with { PrevClose = d.Price, T = [start], C = [d.Price], PeriodStart = start, PeriodEnd = d.RegularEnd ?? d.PeriodEnd }
+            : d;
+
+    static SessionDto? Session(ChartData? d) =>
+        d is { RegularStart: { } s, RegularEnd: { } e } && e > s ? new SessionDto(s, e) : null;
 
     /// <summary>The same quote the other way round (EUR/USD to USD/EUR).</summary>
     internal static ChartData Invert(ChartData d) => d with

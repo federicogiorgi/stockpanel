@@ -57,4 +57,18 @@ public class SnapshotTests
         Assert.Equal(10, st.OverallPct!.Value, 2);
         Assert.Equal(100, st.Pl!.Value, 2);
     }
+
+    [Fact]
+    public void JustAfterTheOpen_WithoutTodaysTrades_TheDayIsUnchanged()
+    {
+        // yesterday's quote (169 -> 170.34, last trade at 1000) while today's session started at 5000
+        var d = new ChartData("AI.PA", "EUR", 170.34, 169, 1000, 0, 2000, true, [0, 900], [169.5, 170.34], 5000, 9000);
+        var t = SnapshotBuilder.Today(d, 5100);
+        Assert.Equal(170.34, t.PrevClose);
+        Assert.Equal([5000L], t.T);
+        Assert.Equal(5000, t.PeriodStart);
+        Assert.Same(d, SnapshotBuilder.Today(d, 4000));                        // before the open: yesterday's day stays
+        var traded = d with { MarketTime = 5050 };
+        Assert.Same(traded, SnapshotBuilder.Today(traded, 5100));             // today's first trade is in: real data
+    }
 }

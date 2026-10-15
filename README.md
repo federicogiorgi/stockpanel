@@ -22,8 +22,15 @@ Each tile is green when the stock is up for the day and red when it is down, dar
 brighter with the size of the move. The daily % uses the same colour; the result against
 the purchase price has its own green/red (on a dark pill), independent of the day. In the
 charts the area above the dashed reference line (the previous close) is
-green and the area below it red. A small white dot in a tile's corner means its market is
-open. Quotes come from Yahoo Finance every minute.
+green and the area below it red. Quotes come from Yahoo Finance every minute.
+
+When a stock's or fund's market is **closed**, its tile loses its colour (only a faint hint of
+green or red stays), the chart fades under fine hatching and is labelled **CLOSED**, or
+**OPENS 15:30** (**OPENS MON 09:00**) when the next session is known. Names and numbers stay as
+readable as ever, and show the last session. Open markets keep the full colour and a small
+white dot in the corner; the switch happens on the clock, the moment a market opens or closes.
+Bitcoin and currencies trade around the clock and are always open. Just after an open, until
+Yahoo's (delayed) first quotes of the day arrive, the day's change reads 0.00%.
 
 ## Requirements
 
