@@ -20,6 +20,7 @@ public static class Lists
     static readonly string[] TickerCols = ["Ticker", "Symbol"];
     static readonly string[] YahooCols = ["Yahoo", "Yahoo Ticker", "Yahoo Symbol"];
     static readonly string[] BuyCols = ["Purchase Price", "Buy Price", "Average Price", "Avg Price", "Average Cost", "Cost Price", "PMC", "Prezzo Medio"];
+    static readonly string[] BuyCurrencyCols = ["Purchase Currency", "Buy Currency", "Valuta Acquisto"];
     static readonly string[] QtyCols = ["Quantity", "Qty", "Shares", "Units", "Quantita", "Quantità"];
     static readonly string[] PriceCols = ["Current Price", "Price", "Last Price"];
     static readonly string[] ValueCols = ["Current Total Value (Original Currency)", "Current Total Value", "Market Value", "Value"];
@@ -38,7 +39,8 @@ public static class Lists
     };
 
     /// <param name="purchaseCurrency">Currency of the purchase prices (config.json "purchaseCurrency");
-    /// null: each stock's own currency. A currency in the column name, as in "Purchase Price (EUR)", wins.</param>
+    /// null: each stock's own currency. A currency in the column name, as in "Purchase Price (EUR)", wins over it,
+    /// and a "Purchase Currency" cell (GBP, or GBX for pence) wins over both for its own row.</param>
     public static (List<Holding> Items, List<string> Warnings) LoadStocks(string path, string? purchaseCurrency = null)
     {
         var items = new List<Holding>();
@@ -72,7 +74,9 @@ public static class Lists
             var (currency, factor) = MainUnit(table.Get(row, CurrencyCols) is { Length: > 0 } c ? c : "EUR");
             string? buyIn = null;
             var buyFactor = factor;
-            if ((buyColumn?.Currency ?? purchaseCurrency) is { Length: > 0 } bcur) (buyIn, buyFactor) = MainUnit(bcur.Trim());
+            var rowBuyCurrency = table.Get(row, BuyCurrencyCols);
+            var bcur = rowBuyCurrency.Length > 0 ? rowBuyCurrency : buyColumn?.Currency ?? purchaseCurrency;
+            if (bcur is { Length: > 0 }) (buyIn, buyFactor) = MainUnit(bcur.Trim());
             var yahoo = table.Get(row, YahooCols);
             items.Add(new Holding(name, isin, ticker, table.Get(row, MarketCols), table.Get(row, SectorCols),
                 currency, (buy ?? 0) * buyFactor, qty ?? 0, yahoo.Length > 0 ? yahoo : null, buyIn));

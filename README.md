@@ -78,7 +78,9 @@ or, as in the broker export, from `Current Total Value (Original Currency)` ÷ `
 
 `Purchase Price` is in the stock's own currency unless you say otherwise. Brokers often report
 what you paid in euro: set `"purchaseCurrency": "EUR"` in `config.json` (as shipped), or name
-the currency in the column, as in `Purchase Price (EUR)` (the column name wins). A dollar
+the currency in the column, as in `Purchase Price (EUR)` (the column name wins). A stock bought in
+another currency can say so in an optional `Purchase Currency` column (for example `GBP`, or
+`GBX` for a price in pence); a filled cell wins for its own row, empty cells follow the rest. A dollar
 stock's result is then its price converted at today's rate against the euro you paid, so it
 includes the dollar's move since you bought. € amounts use today's exchange rates.
 

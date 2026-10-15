@@ -60,6 +60,16 @@ public class ListsTests
     }
 
     [Fact]
+    public void PurchaseCurrencyCell_OverridesTheSettingForItsRow()
+    {
+        var path = Temp("Stock Name,Ticker,Purchase Price,Currency,Quantity,Purchase Currency\nACME,ACME.O,90.5,USD,20,\nSHELL,SHEL.L,12456,GBP,30,GBX\n");
+        var (items, _) = Lists.LoadStocks(path, "EUR");
+        Assert.Equal("EUR", items[0].BuyCurrency);     // empty cell: the setting
+        Assert.Equal("GBP", items[1].BuyCurrency);     // GBX = pence
+        Assert.Equal(124.56, items[1].BuyPrice, 6);
+    }
+
+    [Fact]
     public void Pence_AreConvertedToPounds()
     {
         var path = Temp("Name,Ticker,Purchase Price,Quantity,Currency\nSHELL,SHEL.L,2500,10,GBX\n");
