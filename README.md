@@ -50,16 +50,13 @@ The last numbers are kept in `%LOCALAPPDATA%\stockpanel\last.json` and shown at 
 
 ### Start with Windows
 
-stockpanel needs no administrator rights, so a Run entry is enough. It then appears in
-**Settings → Apps → Startup** as "stockpanel", where you can switch it on and off:
+Like paxpanel, stockpanel adds itself to **Settings → Apps → Startup** as "stockpanel" the
+first time it runs, **switched off**; flip the switch there whenever you want it to start at
+logon. It needs no administrator rights, so the entry (a value in
+`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`) starts it directly, and every start keeps
+it pointing at the exe if you move the folder. `StockPanel.exe --remove-startup` removes it.
 
-```powershell
-Set-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Run stockpanel ('"' + (Resolve-Path .\StockPanel.exe) + '"')
-```
-
-To remove it: `Remove-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Run stockpanel`.
-
-Switches: `--windowed` (always a normal window), `--screenshot out.png` (save a picture of
+Switches: `--windowed` (always a normal window), `--remove-startup` (see above), `--screenshot out.png` (save a picture of
 the panel once the live data is in, then exit).
 
 ## The lists

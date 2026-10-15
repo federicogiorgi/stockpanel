@@ -7,6 +7,8 @@ static class Program
     {
         AppDomain.CurrentDomain.UnhandledException += (_, e) => Log.Error("Unhandled", e.ExceptionObject as Exception);
 
+        if (args.Contains("--remove-startup")) return RemoveStartup();
+
         var screenshot = ArgValue(args, "--screenshot");
         var windowed = args.Contains("--windowed");
 
@@ -18,11 +20,35 @@ static class Program
         }
 
         Log.Info("stockpanel start");
+        if (screenshot is null) EnsureStartupEntry();
         ApplicationConfiguration.Initialize();
         Application.ThreadException += (_, e) => Log.Error("UI thread", e.Exception);
         Application.Run(new PanelWindow(AppContext.BaseDirectory, windowed, screenshot));
         instance?.ReleaseMutex();
         return Environment.ExitCode;
+    }
+
+    /// <summary>Keeps the Settings › Apps › Startup entry pointing at this exe (added switched off the first time).</summary>
+    static void EnsureStartupEntry()
+    {
+        try
+        {
+            var exe = Environment.ProcessPath ?? Application.ExecutablePath;
+            if (new StartupRegistration().EnsureRunEntry(exe)) Log.Info("Added stockpanel to Settings > Apps > Startup (switched off)");
+        }
+        catch (Exception e)
+        {
+            Log.Warn($"Startup entry not updated: {e.Message}");
+        }
+    }
+
+    static int RemoveStartup()
+    {
+        new StartupRegistration().Remove();
+        Log.Info("Removed the Startup entry");
+        MessageBox.Show("stockpanel was removed from Startup apps.\n\nStarting StockPanel.exe adds it back (switched off).",
+            "stockpanel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        return 0;
     }
 
     static string? ArgValue(string[] args, string name)
