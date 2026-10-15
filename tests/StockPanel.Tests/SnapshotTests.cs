@@ -17,6 +17,7 @@ public class SnapshotTests
         using var doc = JsonDocument.Parse(Chart);
         var c = YahooClient.ParseChart(doc.RootElement, 1500)!;
         Assert.Equal("GBP", c.Currency);
+        Assert.Equal("GBp", c.QuoteUnit);        // the page shows London prices in pence, like brokers
         Assert.Equal(26, c.Price, 6);
         Assert.Equal(25, c.PrevClose!.Value, 6);
         Assert.Equal([0L, 600L], c.T);

@@ -12,7 +12,8 @@ connected. It shows:
 - **The four indices/funds** of `list_others.csv`: daily change and today's chart, in taller
   tiles set apart from the stocks
 - **Every stock** of `list_stocks.csv`: name and daily change (large), sector, result
-  against the purchase price (%), the price in its own currency and today's chart
+  against the purchase price (%), the price in its own currency (London stocks in pence, as
+  brokers quote them) and today's chart
 - Spare cells at the end of the stock grid show Bitcoin in dollars (since midnight UTC), then USD/EUR
 
 <p align="center"><img src="docs/panel.png" width="300" alt="stockpanel showing the example portfolio"></p>

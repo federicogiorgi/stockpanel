@@ -5,11 +5,12 @@ namespace StockPanel;
 
 /// <summary>One Yahoo Finance chart: the latest quote plus a price series. Prices are in <see cref="Currency"/>
 /// (main unit: pence are already converted to pounds). RegularStart..RegularEnd is the market's current or
-/// next regular session (Yahoo's currentTradingPeriod), used to tell when the market is open.</summary>
+/// next regular session (Yahoo's currentTradingPeriod), used to tell when the market is open. QuoteUnit is the
+/// minor unit the market quotes in (GBp for London: pence), null when it quotes in the main unit.</summary>
 public sealed record ChartData(
     string Symbol, string Currency, double Price, double? PrevClose, long MarketTime,
     long? PeriodStart, long? PeriodEnd, bool IsOpen, long[] T, double[] C,
-    long? RegularStart = null, long? RegularEnd = null);
+    long? RegularStart = null, long? RegularEnd = null, string? QuoteUnit = null);
 
 public sealed record SearchHit(string Symbol, string Exchange, string QuoteType);
 
@@ -85,7 +86,8 @@ public sealed class YahooClient : IDisposable
         var r = results[0];
         if (!r.TryGetProperty("meta", out var meta)) return null;
 
-        var (currency, factor) = Lists.MainUnit(Str(meta, "currency") ?? "");
+        var rawCurrency = Str(meta, "currency") ?? "";
+        var (currency, factor) = Lists.MainUnit(rawCurrency);
         var price = Num(meta, "regularMarketPrice");
         if (price is null) return null;
         var prev = Num(meta, "previousClose") ?? Num(meta, "chartPreviousClose");
@@ -133,7 +135,7 @@ public sealed class YahooClient : IDisposable
 
         return new ChartData(Str(meta, "symbol") ?? "", currency, price.Value * factor, prev * factor,
             Long(meta, "regularMarketTime") ?? nowUnix, periodStart, periodEnd, isOpen, times.ToArray(), closes.ToArray(),
-            regStart, regEnd);
+            regStart, regEnd, factor != 1 ? rawCurrency : null);
     }
 
     static string? Str(JsonElement e, string name) =>

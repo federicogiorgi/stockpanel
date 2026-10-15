@@ -21,9 +21,12 @@ function pct(v) {
   const a = Math.abs(v).toFixed(2);
   return (a === '0.00' ? '' : sign(v)) + a + '%';
 }
-// a price in its own currency: $347.64, €1,612.00, £124.60
-function price(v, cur, decimals = 2) {
+// a price in its own currency: $347.64, €1,612.00, £124.60; London quotes in pence (GBp), as brokers show
+// them: 12,478p (= £124.78)
+function price(v, cur, decimals = 2, unit = null) {
   if (!isNum(v)) return '–';
+  if (unit === 'GBp' || unit === 'GBX') return Math.round(v * 100).toLocaleString('en-US') + 'p';
+  if (unit) return (v * 100).toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' ' + unit;
   const s = cur ? (CUR[cur] ?? cur + ' ') : '';
   return s + v.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
@@ -290,7 +293,7 @@ function render(s) {
       const o = dir(it.overallPct);
       const ovp = $('.ovp', el);
       setText(ovp, pct(it.overallPct)); ovp.className = 'ov ovp ' + tone(o);
-      setText($('.px', el), price(it.price, it.currency));
+      setText($('.px', el), price(it.price, it.currency, 2, it.quoteUnit));
     });
   });
 

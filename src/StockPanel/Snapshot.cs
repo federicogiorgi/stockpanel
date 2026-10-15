@@ -13,7 +13,8 @@ public sealed record SessionDto(long Start, long End);
 
 public sealed record StockDto(
     string Name, string Sector, string? Symbol, string Currency, double? Price, double? ChangePct,
-    double? OverallPct, double? Pl, double? Day, double? Value, bool Open, bool Stale, SeriesDto? Intraday, SessionDto? Session);
+    double? OverallPct, double? Pl, double? Day, double? Value, bool Open, bool Stale, SeriesDto? Intraday, SessionDto? Session,
+    string? QuoteUnit = null);
 
 public sealed record IndexDto(string Name, string? Symbol, double? Price, double? ChangePct, bool Open, bool Stale, SeriesDto? Intraday, SessionDto? Session);
 
@@ -83,7 +84,7 @@ public static class SnapshotBuilder
 
             stockDtos.Add((new StockDto(h.Name, h.Sector, s.Symbol, h.Currency, R(price, 4), R(change, 2), R(overall, 2),
                 R(pl, 2), R(day, 2), R(value, 2), d?.IsOpen ?? false, Stale(s),
-                d is null ? null : Intraday(d), Session(d)), k));
+                d is null ? null : Intraday(d), Session(d), d?.QuoteUnit), k));
         }
 
         var sorted = cfg.SortBy.ToLowerInvariant() switch
