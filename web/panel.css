@@ -81,9 +81,11 @@ svg.sp { display: block; width: 100%; overflow: visible; }
 .sc { flex: 1; min-width: 0; font-size: 11.5px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; }
 /* overall result vs purchase price: own green/red, on a dark pill so it reads on either tile tint */
 .ov { font-size: 13px; padding: 0 4px; border-radius: 3px; background: rgb(0 0 0 / .32); }
+/* current price in the stock's own currency: neutral, next to the result pill */
+.px { font-size: 13px; color: #e4e7eb; }
 .ch { position: relative; flex: 1; min-height: 0; display: flex; gap: 6px; margin-top: 3px; }
 .ch svg { flex: 1; min-width: 0; height: 100%; }
-.xt .ovm { display: none; }
+.xt .ov { display: none; }
 
 /* index tiles: name and daily % only, with the day's chart; taller than the stock tiles */
 #idx .tile { height: 90px; padding: 4px 7px 5px; }

@@ -21,11 +21,11 @@ function pct(v) {
   const a = Math.abs(v).toFixed(2);
   return (a === '0.00' ? '' : sign(v)) + a + '%';
 }
-function money(v, cur) {
+// a price in its own currency: $347.64, €1,612.00, £124.60
+function price(v, cur, decimals = 2) {
   if (!isNum(v)) return '–';
-  const s = CUR[cur] ?? cur + ' ';
-  const a = Math.round(Math.abs(v));
-  return (a === 0 ? '' : sign(v)) + s + a.toLocaleString('en-US');
+  const s = cur ? (CUR[cur] ?? cur + ' ') : '';
+  return s + v.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 // direction of a value as shown (a change that rounds to 0.00 counts as unchanged)
 function dir(v, digits = 2) {
@@ -142,7 +142,7 @@ function stockTile() {
   el.className = 'tile flat';
   el.innerHTML =
     '<div class="r1"><span class="nm"></span><span class="dp">–</span></div>' +
-    '<div class="r2"><span class="sc"></span><span class="ov ovp">–</span><span class="ov ovm">–</span></div>' +
+    '<div class="r2"><span class="sc"></span><span class="px">–</span><span class="ov ovp">–</span></div>' +
     '<div class="ch"><svg class="sp day"></svg><span class="mk"></span></div>';
   return el;
 }
@@ -264,10 +264,7 @@ function renderExtras(extras) {
     paintTile(el, x);
     el.classList.add('xt');
     setText($('.sc', el), x.note || '');
-    const p = $('.ovp', el);
-    const sym = x.currency ? (CUR[x.currency] ?? x.currency + ' ') : '';
-    setText(p, sym + x.price.toLocaleString('en-US', { minimumFractionDigits: x.decimals, maximumFractionDigits: x.decimals }));
-    p.className = 'ov ovp zero';
+    setText($('.px', el), price(x.price, x.currency, x.decimals));
     fitName($('.nm', el), 17);
   });
 }
@@ -279,7 +276,6 @@ function hhmm(iso) {
 
 function render(s) {
   last = s;
-  const cur = s.base || 'EUR';
   renderWeather(s.weather);
   buildGrids(s);
 
@@ -292,9 +288,9 @@ function render(s) {
     if (!el || !el.classList.contains('tile')) return;
     paintTile(el, item, (el, it) => {
       const o = dir(it.overallPct);
-      const ovp = $('.ovp', el), ovm = $('.ovm', el);
+      const ovp = $('.ovp', el);
       setText(ovp, pct(it.overallPct)); ovp.className = 'ov ovp ' + tone(o);
-      setText(ovm, money(it.pl, cur)); ovm.className = 'ov ovm ' + tone(dir(it.pl, 0));
+      setText($('.px', el), price(it.price, it.currency));
     });
   });
 
