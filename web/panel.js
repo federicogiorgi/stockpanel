@@ -145,7 +145,7 @@ function stockTile() {
   el.className = 'tile flat';
   el.innerHTML =
     '<div class="r1"><span class="nm"></span><span class="dp">–</span></div>' +
-    '<div class="r2"><span class="sc"></span><span class="px">–</span><span class="ov ovp">–</span></div>' +
+    '<div class="r2"><span class="mks"></span><span class="sc"></span><span class="px">–</span><span class="ov ovp">–</span></div>' +
     '<div class="ch"><svg class="sp day"></svg><span class="mk"></span></div>';
   return el;
 }
@@ -177,8 +177,8 @@ function paintMarket(el) {
   const open = marketOpen(el._session, el._open);
   el.classList.toggle('open', open);
   el.classList.toggle('closed', !open);
-  const mk = $('.mk', el);
-  if (mk) setText(mk, open ? '' : closedLabel(el._session));
+  const label = open ? '' : closedLabel(el._session);
+  for (const mk of el.querySelectorAll('.mk, .mks')) setText(mk, label);
 }
 
 function updateMarkets() {
