@@ -37,8 +37,8 @@ b { font-weight: 600; }
 
 /* ---- shared tile look ---- */
 .tile { border-radius: 6px; background: var(--tile); position: relative; overflow: hidden; }
-.tile.up { background: hsl(145 36% calc(10% + 8% * var(--k, 0))); }
-.tile.down { background: hsl(0 40% calc(11% + 8% * var(--k, 0))); }
+.tile.up { background: hsl(145 46% calc(14% + 9% * var(--k, 0))); }
+.tile.down { background: hsl(0 52% calc(15% + 9% * var(--k, 0))); }
 .lbl { font-size: 11px; color: var(--dim); letter-spacing: .6px; }
 .pos { color: var(--up); }
 .neg { color: var(--down); }
@@ -61,15 +61,15 @@ svg.sp { display: block; width: 100%; overflow: visible; }
 /* market open: a small dot in the corner */
 .tile.open::after { content: ''; position: absolute; top: 3px; right: 3px; width: 4px; height: 4px; border-radius: 50%; background: #e4e7eb; opacity: .7; }
 
-/* market closed: the tint loses its colour (a faint hint of green or red stays), the chart fades under fine
-   hatching and carries a CLOSED / OPENS 15:30 label. Names and numbers keep their colours. */
-.tile.closed.up { background: hsl(145 10% calc(12% + 2% * var(--k, 0))); }
-.tile.closed.down { background: hsl(0 10% calc(12% + 2% * var(--k, 0))); }
-.tile.closed .ch svg { opacity: .42; }
-.tile.closed .ch::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: 3px;
-  background: repeating-linear-gradient(135deg, rgb(255 255 255 / .07) 0 1px, transparent 1px 6px);
+/* market closed: greyed out. A neutral grey tile under fine hatching, with only a thin green or red edge on the
+   left for the day's direction; the chart fades and carries a CLOSED / OPENS 15:30 label (on short tiles the
+   label takes the sector's place). Names and numbers keep their colours. */
+.tile.closed, .tile.closed.up, .tile.closed.down {
+  background: repeating-linear-gradient(135deg, rgb(255 255 255 / .045) 0 1px, transparent 1px 7px), #1f2124;
 }
+.tile.closed.up { box-shadow: inset 3px 0 0 hsl(145 45% 32%); }
+.tile.closed.down { box-shadow: inset 3px 0 0 hsl(0 50% 38%); }
+.tile.closed .ch svg { opacity: .4; }
 .mk {
   display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1;
   font-size: 11px; letter-spacing: 1.4px; color: #dfe2e6; white-space: nowrap;

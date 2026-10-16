@@ -25,9 +25,10 @@ the purchase price has its own green/red (on a dark pill), independent of the da
 charts the area above the dashed reference line (the previous close) is
 green and the area below it red. Quotes come from Yahoo Finance every minute.
 
-When a stock's or fund's market is **closed**, its tile loses its colour (only a faint hint of
-green or red stays), the chart fades under fine hatching and is labelled **CLOSED**, or
-**OPENS 15:30** (**OPENS MON 09:00**) when the next session is known. Names and numbers stay as
+When a stock's or fund's market is **closed**, its tile is greyed out: neutral grey under fine
+hatching, with only a thin green or red edge on the left for the day's direction. Its chart
+fades and is labelled **CLOSED**, or **OPENS 15:30** (**OPENS MON 09:00**) when the next session
+is known; on short tiles (long lists) the label takes the sector's place. Names and numbers stay as
 readable as ever, and show the last session. Open markets keep the full colour and a small
 white dot in the corner; the switch happens on the clock, the moment a market opens or closes.
 Bitcoin and currencies trade around the clock and are always open. Just after an open, until
