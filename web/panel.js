@@ -173,10 +173,17 @@ function closedLabel(session, now = Date.now() / 1000) {
   return t.toDateString() === today.toDateString() ? `OPENS ${hm}` : `OPENS ${DAYS[t.getDay()].toUpperCase()} ${hm}`;
 }
 
+/* A closed market whose last trade is from an earlier day (it is past midnight and the market has not opened
+   yet today, or it is the weekend) has no change for today: the tile hides yesterday's daily % and its colour. */
+function dayNotStarted(el, open) {
+  return !open && isNum(el._lastTrade) && new Date(el._lastTrade * 1000).toDateString() !== new Date().toDateString();
+}
+
 function paintMarket(el) {
   const open = marketOpen(el._session, el._open);
   el.classList.toggle('open', open);
   el.classList.toggle('closed', !open);
+  el.classList.toggle('noday', dayNotStarted(el, open));
   const label = open ? '' : closedLabel(el._session);
   for (const mk of el.querySelectorAll('.mk, .mks')) setText(mk, label);
 }
@@ -190,6 +197,7 @@ function paintTile(el, item, extra) {
   const cls = ['tile', tint(d)];
   el._session = item.session || null;
   el._open = !!item.open;
+  el._lastTrade = item.intraday && item.intraday.t.length ? item.intraday.t[item.intraday.t.length - 1] : null;
   cls.push(marketOpen(el._session, el._open) ? 'open' : 'closed');
   if (item.stale) cls.push('stale');
   const c = cls.join(' ');
