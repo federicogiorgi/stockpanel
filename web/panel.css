@@ -70,7 +70,7 @@ svg.sp { display: block; width: 100%; overflow: visible; }
 .tile.closed.up { box-shadow: inset 3px 0 0 hsl(145 45% 32%); }
 .tile.closed.down { box-shadow: inset 3px 0 0 hsl(0 50% 38%); }
 .tile.closed .ch svg { opacity: .4; }
-/* past midnight, before the market opens: no daily change yet (yesterday's % and colour edge are hidden) */
+/* an hour after the close, until the next open: the daily % and the colour edge are hidden */
 .tile.noday .dp { visibility: hidden; }
 .tile.closed.noday { box-shadow: none; }
 .mk {

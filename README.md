@@ -29,10 +29,9 @@ When a stock's or fund's market is **closed**, its tile is greyed out: neutral g
 hatching, with only a thin green or red edge on the left for the day's direction. Its chart
 fades and is labelled **CLOSED**, or **OPENS 15:30** (**OPENS MON 09:00**) when the next session
 is known; on short tiles (long lists) the label takes the sector's place. Names and numbers stay as
-readable as ever. After a market closes its tile keeps the day's change until midnight; from
-midnight until the market opens again (and over the weekend) there is no daily change yet, so the
-daily % and the green/red edge are left out and only the price and the result against the
-purchase price remain. Open markets keep the full colour and a small
+readable as ever. After a market closes its tile keeps the day's change for one hour; from
+then until the market opens again (and over the weekend) the daily % and the green/red edge are
+left out, and only the price and the result against the purchase price remain. Open markets keep the full colour and a small
 white dot in the corner; the switch happens on the clock, the moment a market opens or closes.
 Bitcoin and currencies trade around the clock and are always open. Just after an open, until
 Yahoo's (delayed) first quotes of the day arrive, the day's change reads 0.00%.

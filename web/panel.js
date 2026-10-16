@@ -173,17 +173,22 @@ function closedLabel(session, now = Date.now() / 1000) {
   return t.toDateString() === today.toDateString() ? `OPENS ${hm}` : `OPENS ${DAYS[t.getDay()].toUpperCase()} ${hm}`;
 }
 
-/* A closed market whose last trade is from an earlier day (it is past midnight and the market has not opened
-   yet today, or it is the weekend) has no change for today: the tile hides yesterday's daily % and its colour. */
-function dayNotStarted(el, open) {
-  return !open && isNum(el._lastTrade) && new Date(el._lastTrade * 1000).toDateString() !== new Date().toDateString();
+/* A closed market keeps its daily change for one hour after the close, then the tile hides that daily % and
+   its colour, leaving the price and the result against the purchase price. The close is the end of the last
+   session that has ended, or the last trade if later (closing auctions); before the open it is the last trade. */
+const DAY_SHOWN_AFTER_CLOSE = 3600;
+function dayOver(el, open, now = Date.now() / 1000) {
+  if (open) return false;
+  const s = el._session;
+  const closed = Math.max(isNum(el._lastTrade) ? el._lastTrade : 0, s && s.end <= now ? s.end : 0);
+  return closed > 0 && now - closed > DAY_SHOWN_AFTER_CLOSE;
 }
 
 function paintMarket(el) {
   const open = marketOpen(el._session, el._open);
   el.classList.toggle('open', open);
   el.classList.toggle('closed', !open);
-  el.classList.toggle('noday', dayNotStarted(el, open));
+  el.classList.toggle('noday', dayOver(el, open));
   const label = open ? '' : closedLabel(el._session);
   for (const mk of el.querySelectorAll('.mk, .mks')) setText(mk, label);
 }
